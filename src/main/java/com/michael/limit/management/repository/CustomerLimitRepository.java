@@ -11,13 +11,13 @@ import java.util.List;
 @Repository
 public interface CustomerLimitRepository extends JpaRepository<CustomerLimitModel, Long> {
 
-    @Query(value = "SELECT TO_CHAR(SYSTIMESTAMP,'DD-MON-YYYY HH24:MI:SSFF2') AS TimeNow FROM Dual", nativeQuery = true)
+    @Query(value = "SELECT TO_CHAR(current_timestamp, 'DD-MON-YYYY HH24:MI:SS.FF2') AS TimeNow", nativeQuery = true)
     String createTime();
 
     @Override
     List<CustomerLimitModel> findAll();
 
-    @Query(value = "SELECT TO_CHAR(sysdate,'DD-MON-YYYY') AS Create_date FROM Dual", nativeQuery = true)
+    @Query(value = "SELECT TO_CHAR(current_date, 'DD-MON-YYYY') AS Create_date", nativeQuery = true)
     String createDate();
 
     @Query(value = "select s from CustomerLimitModel s where s.cifId = :cifId " +

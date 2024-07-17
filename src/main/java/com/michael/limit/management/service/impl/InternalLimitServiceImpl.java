@@ -1,5 +1,6 @@
 package com.michael.limit.management.service.impl;
 
+import com.michael.limit.management.config.ExternalConfig;
 import com.michael.limit.management.custom.CustomResponse;
 import com.michael.limit.management.dto.authentication.ResponseMessage;
 import com.michael.limit.management.dto.defaultLimitDto.*;
@@ -12,6 +13,7 @@ import com.michael.limit.management.model.CBNMaxLimitModel;
 import com.michael.limit.management.model.ProductType;
 import com.michael.limit.management.model.InternalLimitModel;
 import com.michael.limit.management.repository.CBNMaxLimitRepository;
+import com.michael.limit.management.repository.CustomerLimitRepository;
 import com.michael.limit.management.repository.ProductTypeRepository;
 import com.michael.limit.management.repository.InternalLimitRepository;
 import com.michael.limit.management.service.InternalLimitService;
@@ -33,6 +35,8 @@ public class InternalLimitServiceImpl implements InternalLimitService {
 
     private final InternalLimitRepository InternalLimitRepository;
 
+    private final CustomerLimitRepository customerLimitRepository;
+
     private final LastModifiedBy lastModifiedBy;
 
     private final HelperUtils helperUtils;
@@ -45,6 +49,8 @@ public class InternalLimitServiceImpl implements InternalLimitService {
 
     private final HttpCall httpCall;
 
+    private final ExternalConfig externalConfig;
+
     @Override
     public Map<String, Object> defaultLimit(DefaultLimitRequestDto defaultLimitRequestDto, String serviceToken, String serviceIpAddress) throws MyCustomException {
         log.info("running default limit config");
@@ -56,9 +62,12 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         String transferType2 = "INSTANT";
 
         AtomicReference<ResponseMessage> responseMessage = new AtomicReference<>();
+        CompletableFuture<Void> authentication = new CompletableFuture<>();
 
-        CompletableFuture<Void> authentication = CompletableFuture.runAsync(() ->
-                responseMessage.set(authenticationValidation(serviceToken, serviceIpAddress)));
+        if (externalConfig.isCallAuthentication()) {
+            authentication = CompletableFuture.runAsync(() ->
+                    responseMessage.set(authenticationValidation(serviceToken, serviceIpAddress)));
+        }
 
         CompletableFuture<Boolean> transferTypeAuth = CompletableFuture.supplyAsync(() ->
                 getTransferType(defaultLimitRequestDto.getTransferType(), transferType1, transferType2));
@@ -69,17 +78,21 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         CompletableFuture<Boolean> globalDailyAuth = CompletableFuture.supplyAsync(() ->
                 getGlobalDailyTransaction(defaultLimitRequestDto.getGlobalDailyTransaction()));
 
-        authentication.join();
+        if (externalConfig.isCallAuthentication()) {
+            authentication.join();
+        }
         boolean transferTypeAuthCheck = transferTypeAuth.join();
         boolean globalPerAuthCheck = globalPerAuth.join();
         boolean globalDailyAuthCheck = globalDailyAuth.join();
 
-        if (!responseMessage.get().getResponseCode().equalsIgnoreCase("00")) {
-            throw new MyCustomizedException("header authentication failed");
-        }
+        if (externalConfig.isCallAuthentication()) {
+            if (!responseMessage.get().getResponseCode().equalsIgnoreCase("00")) {
+                throw new MyCustomizedException("header authentication failed");
+            }
 
-        if (responseMessage.get().getServiceAccessLevel() < 7) {
-            throw new MyCustomizedException("unauthorized access");
+            if (responseMessage.get().getServiceAccessLevel() < 7) {
+                throw new MyCustomizedException("unauthorized access");
+            }
         }
 
         if (!transferTypeAuthCheck) {
@@ -94,6 +107,9 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         if (!globalDailyAuthCheck) {
             throw new MyCustomizedException("global per transaction cannot be null");
         }
+
+        String date = customerLimitRepository.createDate();
+        String time = customerLimitRepository.createTime();
 
         ProductType productType = checkProductType(defaultLimitRequestDto);
 
@@ -153,11 +169,11 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         InternalLimitModel.setUssdPerTransaction(ussdTransactionDto.getUssdPerTransaction());
         InternalLimitModel.setVendorDailyTransaction(vendorTransactionDto.getVendorDailyTransaction());
         InternalLimitModel.setVendorPerTransaction(vendorTransactionDto.getVendorPerTransaction());
-        InternalLimitModel.setCreatedDate(InternalLimitRepository.createDate());
-        InternalLimitModel.setCreatedTime(InternalLimitRepository.createTime());
+        InternalLimitModel.setCreatedDate(date);
+        InternalLimitModel.setCreatedTime(time);
         InternalLimitModel.setLastModifiedBy(lastModifiedBy.lastModifiedBy());
-        InternalLimitModel.setLastModifiedDate(InternalLimitRepository.createDate());
-        InternalLimitModel.setLastModifiedDateTime(InternalLimitRepository.createTime());
+        InternalLimitModel.setLastModifiedDate(date);
+        InternalLimitModel.setLastModifiedDateTime(time);
         InternalLimitModel.setProductType(productType.getProduct());
 
         String hash = helperUtils.InternalHashMethod(InternalLimitModel);
@@ -282,6 +298,9 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         if (responseMessage.get().getServiceAccessLevel() < 7) {
             throw new MyCustomizedException("unauthorized access");
         }
+
+        String date = customerLimitRepository.createDate();
+        String time = customerLimitRepository.createTime();
 
         InternalLimitModel findByServiceTypeId = InternalLimitRepository.findByKycLevel(defaultLimitRequestDto.getKycLevel(), defaultLimitRequestDto.getCifType(), defaultLimitRequestDto.getTransferType(), defaultLimitRequestDto.getProductType());
 
@@ -435,8 +454,8 @@ public class InternalLimitServiceImpl implements InternalLimitService {
         }
 
         findByServiceTypeId.setLastModifiedBy(lastModifiedBy.lastModifiedBy());
-        findByServiceTypeId.setLastModifiedDate(InternalLimitRepository.createDate());
-        findByServiceTypeId.setLastModifiedDateTime(InternalLimitRepository.createTime());
+        findByServiceTypeId.setLastModifiedDate(date);
+        findByServiceTypeId.setLastModifiedDateTime(time);
         findByServiceTypeId.setProductType(defaultLimitRequestDto.getProductType());
 
         String hash = helperUtils.InternalHashMethod(findByServiceTypeId);

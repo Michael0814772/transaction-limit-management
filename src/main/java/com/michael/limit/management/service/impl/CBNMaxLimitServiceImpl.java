@@ -1,5 +1,6 @@
 package com.michael.limit.management.service.impl;
 
+import com.michael.limit.management.config.ExternalConfig;
 import com.michael.limit.management.custom.CustomResponse;
 import com.michael.limit.management.dto.cbnMaxLimit.RegisterCbnLimitDto;
 import com.michael.limit.management.dto.cbnMaxLimit.RegisterCbnLimitList;
@@ -43,7 +44,7 @@ public class CBNMaxLimitServiceImpl implements CBNMaxLimitService {
 
     private final LastModifiedBy lastModifiedBy;
 
-    private final HttpCall httpCall;
+    private final ExternalConfig externalConfig;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -54,7 +55,9 @@ public class CBNMaxLimitServiceImpl implements CBNMaxLimitService {
         String retailCif = "RET";
         String corpCif = "CORP";
 
-        helperUtils.serviceAuth(serviceToken, serviceIpAddress);
+        if (externalConfig.isCallAuthentication()) {
+            helperUtils.serviceAuth(serviceToken, serviceIpAddress);
+        }
 
         for (RegisterCbnLimitList registerCbn : registerCbnLimitDto.getRegisterCbnLimit()) {
 

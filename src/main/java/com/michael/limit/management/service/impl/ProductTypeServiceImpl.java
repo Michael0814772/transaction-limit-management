@@ -1,5 +1,6 @@
 package com.michael.limit.management.service.impl;
 
+import com.michael.limit.management.config.ExternalConfig;
 import com.michael.limit.management.custom.CustomResponse;
 import com.michael.limit.management.dto.productType.ProductTypeDto;
 import com.michael.limit.management.exception.exceptionMethod.MyCustomizedException;
@@ -18,6 +19,8 @@ import java.util.Map;
 public class ProductTypeServiceImpl implements ProductTypeService {
 
     private final ProductTypeRepository productTypeRepository;
+
+    private final ExternalConfig externalConfig;
 
     @Override
     public Map<String, Object> productType(ProductTypeDto productTypeDto) {

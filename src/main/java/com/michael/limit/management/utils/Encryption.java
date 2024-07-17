@@ -1,7 +1,9 @@
 package com.michael.limit.management.utils;
 
+import com.michael.limit.management.config.ExternalConfig;
 import com.michael.limit.management.exception.exceptionMethod.InternalServerException;
 import jakarta.xml.bind.DatatypeConverter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +13,17 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class Encryption {
+
+    private final ExternalConfig externalConfig;
 
     public String encrypt(String message) {
         byte[] encryptedMessage = null;
         try {
-            byte[] vectorBytes = DatatypeConverter.parseHexBinary("4ef56a7c01cd9ef32bc34ef56a7c89ab");
-            byte[] keyBytes = DatatypeConverter.parseHexBinary("2bc34ef56a7c89ab4ef56a7c01cd9ed3");
+            byte[] vectorBytes = DatatypeConverter.parseHexBinary(externalConfig.getVectorBytes());
+            byte[] keyBytes = DatatypeConverter.parseHexBinary(externalConfig.getKeyBytes());
 
             IvParameterSpec ivspec = new IvParameterSpec(vectorBytes);
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, ivspec.getIV());
@@ -42,8 +47,8 @@ public class Encryption {
     public String decrypt(String message) {
         String plainMessage = "";
         try {
-            byte[] vectorBytes = DatatypeConverter.parseHexBinary("4ef56a7c01cd9ef32bc34ef56a7c89ab");
-            byte[] keyBytes = DatatypeConverter.parseHexBinary("2bc34ef56a7c89ab4ef56a7c01cd9ed3");
+            byte[] vectorBytes = DatatypeConverter.parseHexBinary(externalConfig.getVectorBytes());
+            byte[] keyBytes = DatatypeConverter.parseHexBinary(externalConfig.getKeyBytes());
             IvParameterSpec ivspec = new IvParameterSpec(vectorBytes);
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, ivspec.getIV());
             SecretKeySpec keyspec = new SecretKeySpec(keyBytes, "AES");
