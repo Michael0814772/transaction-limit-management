@@ -1,0 +1,49 @@
+package com.michael.limit.management.dto.createAccountLimit;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.ArrayList;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
+@Data
+@RequiredArgsConstructor
+@Validated
+public class CreateLimitRequest {
+
+    private String accountNumber;
+
+    @NotNull
+    @NotEmpty
+    private String cifType; //either RET or CORP
+
+    @NotNull
+    @NotEmpty
+    private String transferType; //either INSTANT or NON-INSTANT
+
+    @JsonInclude(NON_NULL)
+    @Valid
+    private UpdateGlobalLimit globalLimit;
+
+    @JsonInclude(NON_NULL)
+    @Valid
+    private UpdateNipLimit nipLimit;
+
+    @Valid
+    @JsonInclude(NON_NULL)
+    private ArrayList<UpdateChannelLimit> channelLimits;
+
+    public void setCifType(String cifType) {
+        this.cifType = cifType.toUpperCase();
+    }
+
+    public void setTransferType(String transferType) {
+        this.transferType = transferType.toUpperCase();
+    }
+}
