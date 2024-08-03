@@ -9,4 +9,7 @@ public interface ProductTypeRepository extends JpaRepository<ProductType, Long> 
 
     @Query("select s from ProductType s where s.product = :product and s.transfer = :transfer")
     ProductType findByProduct(@Param("product") String product, @Param("transfer") String transfer);
+
+    @Query("select case when count(s) > 0 then true else false end from ProductType s where s.product = :product and s.transfer = :transfer")
+    Boolean findIfProductAndTransferExist(@Param("product") String product, @Param("transfer") String transfer);
 }
