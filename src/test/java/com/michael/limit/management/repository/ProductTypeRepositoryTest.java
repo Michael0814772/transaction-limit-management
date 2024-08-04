@@ -14,6 +14,10 @@ class ProductTypeRepositoryTest {
     @Autowired
     ProductTypeRepository productTypeRepository;
 
+    //Given: product & transfer
+    String product = "NEFT";
+    String transfer = "INSTANT";
+
     @AfterEach
     void tearDown() {
         productTypeRepository.deleteAll();
@@ -21,9 +25,6 @@ class ProductTypeRepositoryTest {
 
     @Test
     void itShouldCheckIfProductExist() {
-
-        String product = "NEFT";
-        String transfer = "INSTANT";
 
         //Given
         ProductType productType = new ProductType(
@@ -42,10 +43,6 @@ class ProductTypeRepositoryTest {
 
     @Test
     void itShouldCheckIfProductDoesNotExist() {
-
-        //Given
-        String product = "NEFT";
-        String transfer = "INSTANT";
 
         //When
         boolean exist = productTypeRepository.findIfProductAndTransferExist(product, transfer);
