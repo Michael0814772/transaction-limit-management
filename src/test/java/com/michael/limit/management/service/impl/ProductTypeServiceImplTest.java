@@ -10,9 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTypeServiceImplTest {
 
-    private ProductTypeRepository productTypeRepository;
+    @Autowired
+    ProductTypeRepository productTypeRepository;
 
-    private ProductType productType;
+    @Autowired
+    ProductType productType;
 
     @BeforeEach
     void setUp() {
