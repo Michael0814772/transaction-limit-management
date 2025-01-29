@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,6 +174,15 @@ public class GlobalErrorHandler {
         log.info(ex.toString());
         CustomException customException = new CustomException();
         customException.setResponseMsg(ex.getMessage());
+        customException.setResponseCode("55");
+        return new ResponseEntity<>(customException, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<CustomException> handleNoResourceFoundException(final NoResourceFoundException ex) {
+        log.info(ex.toString());
+        CustomException customException = new CustomException();
+        customException.setResponseMsg("Inputted a wrong url");
         customException.setResponseCode("55");
         return new ResponseEntity<>(customException, HttpStatus.INTERNAL_SERVER_ERROR);
     }

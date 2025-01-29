@@ -10,12 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
-@Table(name = "apic_t_product_type_table",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {
-                        "product"})})
+@Table(name = "apic_t_product_type_table")
 public class ProductType {
 
     @Id
@@ -36,12 +32,4 @@ public class ProductType {
 
     @Column(name = "product", nullable = false)
     private String product;
-
-    public ProductType(String transfer, String product) {
-        this.transfer = transfer;
-        this.product = product;
-    }
-
-    public ProductType(ProductTypeRepository productTypeRepository) {
-    }
 }

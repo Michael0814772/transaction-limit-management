@@ -50,6 +50,14 @@ public class HelperUtils {
     @Value("${application.auth.accessLevel}")
     private int accessLevel;
 
+    /**
+     * This function retrieves the CIF ID and type for a given account number.
+     *
+     * @param accountNumber The account number for which to retrieve the CIF ID and type.
+     * @return A CifDto object containing the CIF ID and type.
+     * @throws InternalServerException If there is an error retrieving the data from the database.
+     * @throws MyCustomizedException If the account number does not exist or cannot be validated.
+     */
     public CifDto getCifIdAndType(String accountNumber) {
         log.info("getting account details...");
 
